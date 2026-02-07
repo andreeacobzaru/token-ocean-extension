@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Token Ocean",
+  "version": "1.0",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*", "https://gemini.google.com/*"],
+      "js": ["utils.js", "content.js"]
+    },
+    {
+      "matches": ["https://chatgpt.com/*", "https://gemini.google.com/*"],
+      "js": ["file-listener.js"],
+      "world": "MAIN"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  }
+}

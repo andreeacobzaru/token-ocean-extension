@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Water Footprint</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌊Token Ocean</h1>
+    </header>
+
+    <div class="main-stat">
+      <span id="water-ml" class="big-number">0.0</span>
+      <span class="unit">mL</span>
+      <p class="label">Estimated Water Consumed</p>
+    </div>
+
+    <div class="visualizer">
+      <p>That's roughly <span id="bottle-count">0</span> standard water bottles.</p>
+      <div class="progress-bar-container">
+        <div id="water-level" class="progress-bar"></div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <span id="context-size">0</span>
+        <label>Current Context (Tokens)</label>
+      </div>
+      <div class="stat-box">
+        <span id="messages-tracked">0</span>
+        <label>Messages Tracked</label>
+      </div>
+    </div>
+
+    <div id="warning-box" class="warning hidden">
+      ⚠️ High Context Load! Start a new chat to save water.
+    </div>
+
+    <footer>
+      <button id="reset-btn">Reset Session</button>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
