@@ -4,12 +4,50 @@
 let previousMessageCount = 0;
 /** When the user switches to a different chat (e.g. from history), we set baseline and don't count those messages. */
 let lastConversationKey = '';
+/** Track last message length so we only run footprint when it has been stable (streaming finished). */
+let lastSeenLastMessageLength = -1;
 
 function getConversationKey() {
   return window.location.href || window.location.pathname || '';
 }
 
 const LOG_PREFIX = '[Token Ocean]';
+
+/** Runs immediately on mutation. If conversation switched, updates state/storage and returns true. */
+function handleConversationSwitch() {
+  const { user: userSel, assistant: assistantSel } = getMessageSelectors();
+  if (!userSel || !assistantSel) return false;
+
+  const userMessages = document.querySelectorAll(userSel);
+  const assistantMessages = document.querySelectorAll(assistantSel);
+  const messages = [...userMessages, ...assistantMessages];
+
+  if (messages.length === 0) {
+    chrome.storage.local.set({ contextSize: 0, messageCount: 0 });
+    return false;
+  }
+
+  const conversationKey = getConversationKey();
+  if (conversationKey === lastConversationKey) return false;
+
+  if (DEBUG_MESSAGES) console.log(LOG_PREFIX, 'switched conversation (immediate)', { messages: messages.length, key: conversationKey.slice(-40) });
+  lastConversationKey = conversationKey;
+  previousMessageCount = messages.length;
+  lastSeenLastMessageLength = -1;
+  let contextText = '';
+  for (let i = 0; i < messages.length; i++) {
+    const el = messages[i];
+    if (el && el.innerText != null) contextText += el.innerText;
+  }
+  const contextTokens = estimateTokens(contextText);
+  chrome.storage.local.set({
+    sessionWaterMl: 0,
+    waterUsage: 0,
+    contextSize: contextTokens,
+    messageCount: messages.length,
+  });
+  return true;
+}
 
 function calculateFootprint() {
   const { user: userSel, assistant: assistantSel } = getMessageSelectors();
@@ -30,31 +68,13 @@ function calculateFootprint() {
   }
 
   const conversationKey = getConversationKey();
-  const switchedConversation = conversationKey !== lastConversationKey;
-
-  if (switchedConversation) {
-    if (DEBUG_MESSAGES) console.log(LOG_PREFIX, 'skip: switched conversation, baseline set', { messages: messages.length, key: conversationKey.slice(-40) });
-    lastConversationKey = conversationKey;
-    previousMessageCount = messages.length;
-    let contextText = '';
-    for (let i = 0; i < messages.length; i++) {
-      const el = messages[i];
-      if (el && el.innerText != null) contextText += el.innerText;
-    }
-    const contextTokens = estimateTokens(contextText);
-    chrome.storage.local.set({
-      sessionWaterMl: 0,
-      waterUsage: 0,
-      contextSize: contextTokens,
-      messageCount: messages.length,
-    });
+  if (conversationKey !== lastConversationKey) {
     return;
   }
 
   if (messages.length === previousMessageCount) return;
 
   if (DEBUG_MESSAGES) console.log(LOG_PREFIX, 'counting new message/response', { user: userMessages.length, assistant: assistantMessages.length, total: messages.length });
-
   // 2. Calculate Context Window (The "Re-read")
   // The LLM had to read ALL previous messages to generate the newest one.
   let contextText = "";
@@ -72,6 +92,7 @@ function calculateFootprint() {
   const outputTokens = estimateTokens(latestMessage.innerText || '');
 
   if (DEBUG_MESSAGES) console.log(LOG_PREFIX, 'tokens', { contextFromText: contextTokensFromText, output: outputTokens });
+  if (DEBUG_MESSAGES) console.log(LOG_PREFIX, 'latest message', latestMessage.innerText);
 
   chrome.storage.local.get(['lastUploadTokens'], function (data) {
     const fileTokens = data.lastUploadTokens || 0;
@@ -127,10 +148,42 @@ window.addEventListener(FILE_UPLOAD_EVENT, function (e) {
   });
 });
 
-// Watch for changes
-const observer = new MutationObserver((mutations) => {
-  // TODO: use better debouncing
-  calculateFootprint();
+// Run footprint only when the *last message's text* has been unchanged for this long (streaming done).
+// So a 2.5s stall mid-stream doesn't trigger a run; only when content actually stops growing.
+const STABLE_MS = 2000;
+let stableTimer = null;
+
+const observer = new MutationObserver(function () {
+  if (handleConversationSwitch()) return;
+
+  const { user: userSel, assistant: assistantSel } = getMessageSelectors();
+  if (!userSel || !assistantSel) return;
+
+  const userMessages = document.querySelectorAll(userSel);
+  const assistantMessages = document.querySelectorAll(assistantSel);
+  const messages = [...userMessages, ...assistantMessages];
+
+  if (messages.length <= previousMessageCount) {
+    if (stableTimer) clearTimeout(stableTimer);
+    stableTimer = null;
+    return;
+  }
+
+  const latestMessage = messages[messages.length - 1];
+  const currentLength = latestMessage && (latestMessage.innerText || '').length ? (latestMessage.innerText || '').length : 0;
+
+  if (currentLength !== lastSeenLastMessageLength) {
+    lastSeenLastMessageLength = currentLength;
+    if (stableTimer) clearTimeout(stableTimer);
+    if (currentLength > 0) {
+      stableTimer = setTimeout(function () {
+        stableTimer = null;
+        calculateFootprint();
+      }, STABLE_MS);
+    } else {
+      stableTimer = null;
+    }
+  }
 });
 
 observer.observe(document.body, { childList: true, subtree: true });
