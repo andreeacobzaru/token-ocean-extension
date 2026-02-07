@@ -12,37 +12,44 @@
       <h1>🌊Token Ocean</h1>
     </header>
 
+    <div class="view-toggle" role="group" aria-label="View">
+      <button type="button" id="view-total" class="toggle-btn active">Total</button>
+      <button type="button" id="view-session" class="toggle-btn">This session</button>
+    </div>
+
     <div class="main-stat">
       <span id="water-ml" class="big-number">0.0</span>
       <span class="unit">mL</span>
-      <p class="label">Estimated Water Consumed</p>
+      <p id="water-label" class="label">Total water consumed</p>
     </div>
 
-    <div class="visualizer">
-      <p>That's roughly <span id="bottle-count">0</span> standard water bottles.</p>
-      <div class="progress-bar-container">
-        <div id="water-level" class="progress-bar"></div>
+    <div class="session-only">
+      <div class="visualizer">
+        <p>That's roughly <span id="bottle-count">0</span> standard water bottles.</p>
+        <div class="progress-bar-container">
+          <div id="water-level" class="progress-bar"></div>
+        </div>
       </div>
-    </div>
 
-    <div class="stats-grid">
-      <div class="stat-box">
-        <span id="context-size">0</span>
-        <label>Current Context (Tokens)</label>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span id="context-size">0</span>
+          <label>Current Context (Tokens)</label>
+        </div>
+        <div class="stat-box">
+          <span id="messages-tracked">0</span>
+          <label>Messages Tracked</label>
+        </div>
       </div>
-      <div class="stat-box">
-        <span id="messages-tracked">0</span>
-        <label>Messages Tracked</label>
+
+      <div id="warning-box" class="warning hidden">
+        ⚠️ High Context Load! Start a new chat to save water.
       </div>
-    </div>
 
-    <div id="warning-box" class="warning hidden">
-      ⚠️ High Context Load! Start a new chat to save water.
+      <footer>
+        <button id="reset-btn">Reset this session</button>
+      </footer>
     </div>
-
-    <footer>
-      <button id="reset-btn">Reset Session</button>
-    </footer>
   </div>
   <script src="popup.js"></script>
 </body>
