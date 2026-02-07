@@ -1,44 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Water Footprint</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="view-total">
   <div class="container">
-    <header>
-      <h1>🌊Token Ocean</h1>
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">🌊</div>
+        <div class="brand-text">
+          <h1>Token Ocean</h1>
+          <p class="subtitle">Make AI’s water cost visible</p>
+        </div>
+      </div>
     </header>
 
     <div class="view-toggle" role="group" aria-label="View">
       <button type="button" id="view-total" class="toggle-btn active">Total</button>
-      <button type="button" id="view-session" class="toggle-btn">This session</button>
+      <button type="button" id="view-session" class="toggle-btn">This session/chat</button>
     </div>
 
-    <div class="main-stat">
-      <span id="water-ml" class="big-number">0.0</span>
-      <span class="unit">mL</span>
-      <p id="water-label" class="label">Total water consumed</p>
-    </div>
+    <!-- HERO CARD -->
+    <section class="hero">
+      <div class="hero-header">
+        <div class="main-stat">
+          <div class="stat-row">
+            <span id="water-ml" class="big-number">0.0</span>
+            <span id="water-unit" class="unit">mL</span>
+          </div>
+          <p id="water-label" class="label">Total water consumed</p>
+        </div>
 
-    <div class="session-only">
-      <div class="visualizer">
-        <p>That's roughly <span id="bottle-count">0</span> standard water bottles.</p>
-        <div class="progress-bar-container">
-          <div id="water-level" class="progress-bar"></div>
+        <div class="mini-metrics">
+          <div class="pill">
+            <span class="pill-dot"></span>
+            <span><strong id="bottle-count">0</strong> bottles</span>
+          </div>
+          <div class="pill session-only-pill">
+            <span class="pill-icon">💧</span>
+            <span><strong id="context-size">0</strong> ctx</span>
+          </div>
         </div>
       </div>
 
-      <div class="stats-grid">
-        <div class="stat-box">
-          <span id="context-size">0</span>
-          <label>Current Context (Tokens)</label>
+      <!-- VISUAL TOGGLE -->
+      <div class="viz-toggle" role="group" aria-label="Visualization">
+        <button type="button" class="viz-btn active" data-viz="glass">Glass</button>
+        <button type="button" class="viz-btn" data-viz="human">Person</button>
+      </div>
+
+      <!-- VISUALS -->
+      <div class="visual-stage" data-active="glass">
+        <!-- GLASS -->
+        <div class="viz-panel" data-viz="glass">
+          <div class="glass-wrap" aria-label="Glass fill visualization">
+            <div class="glass">
+              <div id="water-level" class="water"></div>
+              <div class="glass-shine"></div>
+            </div>
+          </div>
+          <p class="viz-caption">
+            That’s roughly <strong><span id="glass-equivalent">0</span></strong> glasses.
+          </p>
         </div>
+
+        <!-- HUMAN -->
+        <div class="viz-panel" data-viz="human">
+          <div class="human-wrap" aria-label="Daily intake equivalent visualization">
+            <div class="human">
+              <div id="human-level" class="human-water"></div>
+              <div class="human-outline"></div>
+            </div>
+          </div>
+          <p class="viz-caption">
+            Equivalent to <strong><span id="daily-percent">0</span>%</strong> of one person’s daily drinking water.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SESSION ONLY -->
+    <div class="session-only">
+      <div class="stats-grid">
         <div class="stat-box">
           <span id="messages-tracked">0</span>
           <label>Messages Tracked</label>
+        </div>
+        <div class="stat-box">
+          <span id="context-size-2">0</span>
+          <label>Current Context (Tokens)</label>
         </div>
       </div>
 
@@ -46,11 +99,12 @@
         ⚠️ High Context Load! Start a new chat to save water.
       </div>
 
-      <footer>
-        <button id="reset-btn">Reset this session</button>
+      <footer class="footer">
+        <button id="reset-btn" class="reset-btn">Reset this session</button>
       </footer>
     </div>
   </div>
+
   <script src="popup.js"></script>
 </body>
 </html>
