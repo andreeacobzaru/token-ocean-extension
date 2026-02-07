@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.local.set({
       sessionWaterMl: 0,
       waterUsage: 0,
+      contextSize: 0,
+      messageCount: 0,
     }, () => updateUI());
   });
 });
@@ -56,7 +58,7 @@ function updateUI() {
       document.body.classList.toggle('view-total', viewMode === VIEW_TOTAL);
 
       const warningBox = document.getElementById('warning-box');
-      if (context > 4000) {
+      if (context > 10000) {
         warningBox.classList.remove('hidden');
       } else {
         warningBox.classList.add('hidden');
