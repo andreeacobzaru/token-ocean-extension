@@ -4,6 +4,8 @@
 let previousMessageCount = 0;
 /** When the user switches to a different chat (e.g. from history), we set baseline and don't count those messages. */
 let lastConversationKey = '';
+/** Track last message length so we only run footprint when it has been stable (streaming finished). */
+let lastSeenLastMessageLength = -1;
 
 function getConversationKey() {
   return window.location.href || window.location.pathname || '';
@@ -31,6 +33,7 @@ function handleConversationSwitch() {
   if (DEBUG_MESSAGES) console.log(LOG_PREFIX, 'switched conversation (immediate)', { messages: messages.length, key: conversationKey.slice(-40) });
   lastConversationKey = conversationKey;
   previousMessageCount = messages.length;
+  lastSeenLastMessageLength = -1;
   let contextText = '';
   for (let i = 0; i < messages.length; i++) {
     const el = messages[i];
@@ -145,18 +148,42 @@ window.addEventListener(FILE_UPLOAD_EVENT, function (e) {
   });
 });
 
-// Watch for DOM changes. Run switch detection immediately; debounce only the "add water" calculation
-// so we don't read the latest message mid-stream.
-const DEBOUNCE_MS = 2500;
-let debounceTimer = null;
+// Run footprint only when the *last message's text* has been unchanged for this long (streaming done).
+// So a 2.5s stall mid-stream doesn't trigger a run; only when content actually stops growing.
+const STABLE_MS = 2000;
+let stableTimer = null;
 
 const observer = new MutationObserver(function () {
   if (handleConversationSwitch()) return;
-  if (debounceTimer) clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(function () {
-    debounceTimer = null;
-    calculateFootprint();
-  }, DEBOUNCE_MS);
+
+  const { user: userSel, assistant: assistantSel } = getMessageSelectors();
+  if (!userSel || !assistantSel) return;
+
+  const userMessages = document.querySelectorAll(userSel);
+  const assistantMessages = document.querySelectorAll(assistantSel);
+  const messages = [...userMessages, ...assistantMessages];
+
+  if (messages.length <= previousMessageCount) {
+    if (stableTimer) clearTimeout(stableTimer);
+    stableTimer = null;
+    return;
+  }
+
+  const latestMessage = messages[messages.length - 1];
+  const currentLength = latestMessage && (latestMessage.innerText || '').length ? (latestMessage.innerText || '').length : 0;
+
+  if (currentLength !== lastSeenLastMessageLength) {
+    lastSeenLastMessageLength = currentLength;
+    if (stableTimer) clearTimeout(stableTimer);
+    if (currentLength > 0) {
+      stableTimer = setTimeout(function () {
+        stableTimer = null;
+        calculateFootprint();
+      }, STABLE_MS);
+    } else {
+      stableTimer = null;
+    }
+  }
 });
 
 observer.observe(document.body, { childList: true, subtree: true });
