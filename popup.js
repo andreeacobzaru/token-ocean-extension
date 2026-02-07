@@ -1,51 +1,66 @@
+const VIEW_TOTAL = 'total';
+const VIEW_SESSION = 'session';
+const BOTTLE_ML = 500;
+
 document.addEventListener('DOMContentLoaded', () => {
-    updateUI();
-  
-    // Update every second while popup is open (in case chat is streaming)
-    setInterval(updateUI, 1000);
-  
-    // Reset button logic
-    document.getElementById('reset-btn').addEventListener('click', () => {
-      chrome.storage.local.set({ 
-        waterUsage: 0, 
-        contextSize: 0, 
-        messageCount: 0 
-      }, () => {
-        updateUI();
-      });
-    });
+  updateUI();
+  setInterval(updateUI, 1000);
+
+  // View toggle: Total (all-time) vs This session
+  document.getElementById('view-total').addEventListener('click', () => setView(VIEW_TOTAL));
+  document.getElementById('view-session').addEventListener('click', () => setView(VIEW_SESSION));
+
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    chrome.storage.local.set({
+      sessionWaterMl: 0,
+      waterUsage: 0,
+    }, () => updateUI());
   });
-  
-  function updateUI() {
-    // Fetch data from Chrome's local storage
-    chrome.storage.local.get(['waterUsage', 'contextSize', 'messageCount'], (data) => {
-      const usage = data.waterUsage || 0;
+});
+
+function setView(mode) {
+  chrome.storage.local.set({ viewMode: mode }, () => updateUI());
+  document.getElementById('view-total').classList.toggle('active', mode === VIEW_TOTAL);
+  document.getElementById('view-session').classList.toggle('active', mode === VIEW_SESSION);
+}
+
+function updateUI() {
+  chrome.storage.local.get(
+    ['overallWaterMl', 'sessionWaterMl', 'contextSize', 'messageCount', 'viewMode'],
+    (data) => {
+      const viewMode = data.viewMode || VIEW_TOTAL;
+      const usage =
+        viewMode === VIEW_SESSION
+          ? (data.sessionWaterMl || 0)
+          : (data.overallWaterMl || 0);
       const context = data.contextSize || 0;
       const count = data.messageCount || 0;
-  
-      // 1. Update Water Usage (formatted to 2 decimals)
+
       document.getElementById('water-ml').textContent = usage.toFixed(2);
-  
-      // 2. Update Bottle Calculation (Assuming 500mL standard bottle)
-      const bottles = (usage / 500).toFixed(2);
+      document.getElementById('water-label').textContent =
+        viewMode === VIEW_SESSION ? 'This session' : 'Total water consumed';
+
+      const bottles = (usage / BOTTLE_ML).toFixed(2);
       document.getElementById('bottle-count').textContent = bottles;
-  
-      // 3. Update Progress Bar (Visual flair)
-      // Caps at 100% just for the visual, even if usage goes higher
-      const percentage = Math.min((usage / 500) * 100, 100); 
+
+      const percentage = Math.min((usage / BOTTLE_ML) * 100, 100);
       document.getElementById('water-level').style.width = `${percentage}%`;
-  
-      // 4. Update Context Stats
+
       document.getElementById('context-size').textContent = context.toLocaleString();
       document.getElementById('messages-tracked').textContent = count;
-  
-      // 5. Context Warning Logic
-      // If context > 4000 tokens, the "re-read" cost is getting expensive
+
+      document.getElementById('view-total').classList.toggle('active', viewMode === VIEW_TOTAL);
+      document.getElementById('view-session').classList.toggle('active', viewMode === VIEW_SESSION);
+
+      document.body.classList.toggle('view-session', viewMode === VIEW_SESSION);
+      document.body.classList.toggle('view-total', viewMode === VIEW_TOTAL);
+
       const warningBox = document.getElementById('warning-box');
       if (context > 4000) {
         warningBox.classList.remove('hidden');
       } else {
         warningBox.classList.add('hidden');
       }
-    });
-  }
+    }
+  );
+}

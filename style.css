@@ -6,6 +6,10 @@ body {
     padding: 0;
     color: #333;
   }
+
+  body.view-total .session-only {
+    display: none;
+  }
   
   .container {
     padding: 20px;
@@ -16,6 +20,38 @@ body {
     font-size: 18px;
     margin: 0 0 15px 0;
     color: #2c3e50;
+  }
+
+  .view-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 12px;
+    background: #e8e8ed;
+    border-radius: 8px;
+    padding: 3px;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    border: none;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #7f8c8d;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .toggle-btn:hover {
+    color: #2c3e50;
+  }
+
+  .toggle-btn.active {
+    background: #fff;
+    color: #3498db;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
   
   .main-stat {
