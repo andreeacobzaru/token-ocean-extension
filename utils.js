@@ -31,6 +31,27 @@ function getMessageSelectors() {
   return { user: '', assistant: '' };
 }
 
+/** Text patterns that identify the "Stop generating" button (case-insensitive). */
+var STOP_GENERATING_LABELS = ['stop generating', 'stop'];
+
+/**
+ * Returns the "Stop generating" button element if present (model is streaming).
+ * Uses button text so it works across DOM changes. Returns null if not found.
+ * @returns {HTMLButtonElement | null}
+ */
+function getStopGeneratingButton() {
+  var host = window.location.hostname;
+  var buttons = document.querySelectorAll('button');
+  for (var i = 0; i < buttons.length; i++) {
+    var btn = buttons[i];
+    var text = (btn.textContent || btn.innerText || '').trim().toLowerCase();
+    if (STOP_GENERATING_LABELS.some(function (label) { return text === label || text.indexOf(label) !== -1; })) {
+      return btn;
+    }
+  }
+  return null;
+}
+
 /**
  * Rough token count from text (~4 chars per token).
  * @param {string} text

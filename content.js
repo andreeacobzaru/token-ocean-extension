@@ -1,4 +1,4 @@
-// Depends on utils.js (load order in manifest). Uses: getMessageSelectors, estimateTokens, estimateTokensForFile, DEBUG_MESSAGES, ENERGY_*, WUE_ML_PER_WH.
+// Depends on utils.js (load order in manifest). Uses: getMessageSelectors, getStopGeneratingButton, estimateTokens, estimateTokensForFile, DEBUG_MESSAGES, ENERGY_*, WUE_ML_PER_WH.
 // Persisted: overallWaterMl (all-time). Session: sessionWaterMl (resets on conversation switch or popup "Reset this session").
 
 /** -1 = baseline not yet synced (just switched/reloaded); don't run footprint until we've synced and then see a real increase. */
@@ -8,6 +8,8 @@ let pendingBaselineCount = null;
 let lastConversationKey = '';
 /** Track last message length so we only run footprint when it has been stable (streaming finished). */
 let lastSeenLastMessageLength = -1;
+/** Track "Stop generating" button visibility; when it goes from true to false, we run the final calculation. */
+let stopButtonWasVisible = false;
 
 function getConversationKey() {
   return window.location.href || window.location.pathname || '';
@@ -25,6 +27,7 @@ function handleConversationSwitch() {
   previousMessageCount = -1;
   pendingBaselineCount = null;
   lastSeenLastMessageLength = -1;
+  stopButtonWasVisible = false;
 
   chrome.storage.local.set({
     sessionWaterMl: 0,
@@ -141,6 +144,18 @@ let stableTimer = null;
 
 const observer = new MutationObserver(function () {
   if (handleConversationSwitch()) return;
+
+  // Detect when "Stop generating" disappears → run final calculation immediately.
+  const stopButtonVisibleNow = getStopGeneratingButton() !== null;
+  if (stopButtonWasVisible && !stopButtonVisibleNow) {
+    if (stableTimer) {
+      clearTimeout(stableTimer);
+      stableTimer = null;
+    }
+    if (DEBUG_MESSAGES) console.log(LOG_PREFIX, 'Stop generating disappeared → running footprint');
+    calculateFootprint();
+  }
+  stopButtonWasVisible = stopButtonVisibleNow;
 
   const { user: userSel, assistant: assistantSel } = getMessageSelectors();
   if (!userSel || !assistantSel) return;
