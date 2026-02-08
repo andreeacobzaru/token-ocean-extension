@@ -205,7 +205,7 @@ body.view-total .session-only-pill { display:none; }
   text-align:center;
 }
 
-/* GLASS */
+/* GLASS — tapered drinking glass shape */
 .glass-wrap{
   display:flex;
   justify-content:center;
@@ -213,13 +213,28 @@ body.view-total .session-only-pill { display:none; }
 }
 .glass{
   position: relative;
-  width: 120px;
+  width: 100px;
   height: 140px;
-  border-radius: 16px 16px 22px 22px;
-  border: 2px solid rgba(31,42,55,0.18);
-  background: rgba(255,255,255,0.5);
-  overflow:hidden;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
+  /* Tapered glass: wider at top (rim), narrower at bottom */
+  clip-path: polygon(8% 0%, 92% 0%, 85% 8%, 78% 14%, 72% 100%, 28% 100%, 22% 14%, 15% 8%);
+  -webkit-clip-path: polygon(8% 0%, 92% 0%, 85% 8%, 78% 14%, 72% 100%, 28% 100%, 22% 14%, 15% 8%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.35) 50%, rgba(240,248,255,0.5) 100%);
+  overflow: hidden;
+  box-shadow: inset 2px 0 8px rgba(255,255,255,0.5),
+              inset -1px 0 4px rgba(200,220,255,0.2),
+              0 2px 8px rgba(31,42,55,0.12);
+  border: none;
+}
+.glass::before{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5));
+  border-radius: 2px 2px 0 0;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.8);
 }
 .water{
   position:absolute;
@@ -227,6 +242,8 @@ body.view-total .session-only-pill { display:none; }
   left:0;
   width:100%;
   height:0%; /* JS sets this */
+  clip-path: polygon(8% 0%, 92% 0%, 85% 8%, 78% 14%, 72% 100%, 28% 100%, 22% 14%, 15% 8%);
+  -webkit-clip-path: polygon(8% 0%, 92% 0%, 85% 8%, 78% 14%, 72% 100%, 28% 100%, 22% 14%, 15% 8%);
   background: linear-gradient(180deg, rgba(86,204,242,0.95), rgba(47,128,237,0.95));
   transition: height 0.6s ease;
 }
@@ -249,73 +266,47 @@ body.view-total .session-only-pill { display:none; }
 }
 .glass-shine{
   position:absolute;
-  top: 10px;
-  left: 12px;
-  width: 18px;
-  height: 110px;
+  top: 14px;
+  left: 14px;
+  width: 12px;
+  height: 100px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.45);
-  transform: rotate(8deg);
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.15));
+  transform: rotate(6deg);
+  pointer-events: none;
 }
 
-/* HUMAN */
+/* HUMAN — each circle = one person's daily intake; new circle when one fills */
 .human-wrap{
-  display:flex;
-  justify-content:center;
-  padding-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 8px 6px;
+  min-height: 56px;
 }
-.human{
+.person-circle{
   position: relative;
-  width: 120px;
-  height: 160px;
-  border-radius: 60px;
-  background: rgba(255,255,255,0.45);
-  overflow:hidden;
-  border: 2px solid rgba(31,42,55,0.18);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(248,250,252,0.9);
+  border: 1.5px solid rgba(31,42,55,0.12);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(31,42,55,0.08);
+  flex-shrink: 0;
 }
-
-/* create a simple “person-ish” silhouette with masks using gradients */
-.human::before{
-  content:"";
-  position:absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 50% 18%, rgba(255,255,255,0.0) 0 28px, rgba(255,255,255,0.0) 28px),
-    radial-gradient(circle at 50% 18%, rgba(0,0,0,0) 0 0, rgba(0,0,0,0) 0),
-    linear-gradient(180deg, rgba(255,255,255,0.20), rgba(255,255,255,0.05));
-  pointer-events:none;
-}
-
-/* water fill inside person */
-.human-water{
-  position:absolute;
-  bottom:0;
-  left:0;
-  width:100%;
-  height:0%; /* JS sets this */
+.person-fill{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
   background: linear-gradient(180deg, rgba(86,204,242,0.95), rgba(47,128,237,0.95));
-  transition: height 0.6s ease;
-}
-.human-water::before{
-  content:"";
-  position:absolute;
-  top:-10px;
-  left:-30px;
-  width: 180px;
-  height: 24px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.22);
-  animation: wave 3.2s ease-in-out infinite;
-  opacity: 0.7;
-}
-.human-outline{
-  position:absolute;
-  inset: 0;
-  border-radius: 60px;
-  box-shadow: inset 0 0 0 999px rgba(255,255,255,0.08);
-  pointer-events:none;
+  transition: height 0.4s ease;
 }
 
+/* create a simple “person circles” */
 /* STATS + FOOTER */
 .stats-grid{
   display:flex;

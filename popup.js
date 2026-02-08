@@ -1,6 +1,9 @@
 const VIEW_TOTAL = 'total';
 const VIEW_SESSION = 'session';
 const BOTTLE_ML = 500;
+const GLASS_ML = 250; // typical drinking glass
+const DAILY_ML = 2500; // one person's daily drinking water
+const MAX_PERSON_CIRCLES = 15;
 
 // Format water volume with appropriate unit (mL → L → kL)
 function formatWater(ml) {
@@ -68,9 +71,15 @@ function updateUI() {
       const bottles = (usage / BOTTLE_ML).toFixed(2);
       document.getElementById('bottle-count').textContent = bottles;
 
+      const glasses = usage / GLASS_ML;
+      const glassEl = document.getElementById('glass-equivalent');
+      if (glassEl) {
+        glassEl.textContent = glasses < 0.1 ? '0' : glasses < 1 ? glasses.toFixed(1) : Math.round(glasses);
+      }
+
       const percentage = Math.min((usage / BOTTLE_ML) * 100, 100);
       setWaterFillPercent(percentage);
-      setDailyPercent(usage, 2500);
+      updatePersonCircles(usage);
 
       document.getElementById('context-size').textContent = context.toLocaleString();
       document.getElementById('context-size-2').textContent = context.toLocaleString();
@@ -92,18 +101,52 @@ function updateUI() {
   );
 }
 
-// When you update water, set BOTH fills (glass + human viz)
+// Glass fill only (person viz uses updatePersonCircles)
 function setWaterFillPercent(percent) {
   const p = Math.max(0, Math.min(100, percent));
   const waterLevel = document.getElementById('water-level');
-  const humanLevel = document.getElementById('human-level');
   if (waterLevel) waterLevel.style.height = `${p}%`;
-  if (humanLevel) humanLevel.style.height = `${p}%`;
 }
 
-// Daily intake % (e.g. baseline 2500 mL/day)
-function setDailyPercent(waterMl, baselineMl = 2500) {
-  const pct = Math.round((waterMl / baselineMl) * 100);
-  const el = document.getElementById('daily-percent');
-  if (el) el.textContent = Math.max(0, pct);
+// Person view: one circle per person's daily intake (2500 mL); when one fills, next starts
+function updatePersonCircles(waterMl) {
+  const usage = Math.max(0, Number(waterMl));
+  const fullPeople = Math.floor(usage / DAILY_ML);
+  const remainder = usage % DAILY_ML;
+  const remainderPct = remainder / DAILY_ML * 100;
+  const needPartial = remainderPct > 0;
+  const totalCircles = Math.min(MAX_PERSON_CIRCLES, fullPeople + (needPartial ? 1 : 0));
+  const showAtLeastOne = Math.max(1, totalCircles);
+
+  const container = document.getElementById('human-circles');
+  const countEl = document.getElementById('person-count');
+  if (!container) return;
+
+  const peopleEquivalent = usage / DAILY_ML;
+  if (countEl) {
+    countEl.textContent = peopleEquivalent < 0.01 ? '0' : peopleEquivalent < 1 ? peopleEquivalent.toFixed(1) : peopleEquivalent.toFixed(1);
+  }
+
+  const n = showAtLeastOne;
+  while (container.children.length < n) {
+    const circle = document.createElement('div');
+    circle.className = 'person-circle';
+    const fill = document.createElement('div');
+    fill.className = 'person-fill';
+    circle.appendChild(fill);
+    container.appendChild(circle);
+  }
+  while (container.children.length > n) {
+    container.lastElementChild.remove();
+  }
+
+  const circles = container.querySelectorAll('.person-circle');
+  circles.forEach((circle, i) => {
+    const fill = circle.querySelector('.person-fill');
+    if (!fill) return;
+    let pct = 0;
+    if (i < fullPeople) pct = 100;
+    else if (i === fullPeople && needPartial) pct = remainderPct;
+    fill.style.height = `${pct}%`;
+  });
 }

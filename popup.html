@@ -69,14 +69,11 @@
 
         <!-- HUMAN -->
         <div class="viz-panel" data-viz="human">
-          <div class="human-wrap" aria-label="Daily intake equivalent visualization">
-            <div class="human">
-              <div id="human-level" class="human-water"></div>
-              <div class="human-outline"></div>
-            </div>
+          <div class="human-wrap" id="human-circles" aria-label="Daily intake equivalent (each circle = one person's daily water)">
+            <!-- JS fills with .person-circle elements -->
           </div>
           <p class="viz-caption">
-            Equivalent to <strong><span id="daily-percent">0</span>%</strong> of one person’s daily drinking water.
+            Equivalent to <strong><span id="person-count">0</span></strong> person(s) daily drinking water.
           </p>
         </div>
       </div>
