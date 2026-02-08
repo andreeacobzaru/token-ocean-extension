@@ -73,6 +73,7 @@ function updateUI() {
       setDailyPercent(usage, 2500);
 
       document.getElementById('context-size').textContent = context.toLocaleString();
+      document.getElementById('context-size-2').textContent = context.toLocaleString();
       document.getElementById('messages-tracked').textContent = count;
 
       document.getElementById('view-total').classList.toggle('active', viewMode === VIEW_TOTAL);
