@@ -46,21 +46,12 @@
         </div>
       </div>
 
-      <!-- VISUAL TOGGLE -->
-      <div class="viz-toggle" role="group" aria-label="Visualization">
-        <button type="button" class="viz-btn active" data-viz="glass">Glass</button>
-        <button type="button" class="viz-btn" data-viz="human">Person</button>
-      </div>
-
-      <!-- VISUALS -->
-      <div class="visual-stage" data-active="glass">
+      <!-- VISUALS: session = glasses, total = persons -->
+      <div class="visual-stage">
         <!-- GLASS -->
         <div class="viz-panel" data-viz="glass">
-          <div class="glass-wrap" aria-label="Glass fill visualization">
-            <div class="glass">
-              <div id="water-level" class="water"></div>
-              <div class="glass-shine"></div>
-            </div>
+          <div class="glass-wrap" id="glass-circles" aria-label="Glasses (each = 250 mL)">
+            <!-- JS fills with .glass-circle elements -->
           </div>
           <p class="viz-caption">
             That’s roughly <strong><span id="glass-equivalent">0</span></strong> glasses.
