@@ -2,7 +2,7 @@
 // Loaded before content.js via manifest; all names are global in the content script scope.
 
 // Set to true to log messages to the page console (Inspect → Console)
-var DEBUG_MESSAGES = true;
+var DEBUG_MESSAGES = false;
 
 // Energy constants (Wh = Watt-hours)
 var ENERGY_PREFILL_PER_TOKEN = 0.0002;
