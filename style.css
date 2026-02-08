@@ -195,8 +195,10 @@ body.view-total .session-only-pill { display:none; }
 .viz-panel{
   display:none;
 }
-.visual-stage[data-active="glass"] .viz-panel[data-viz="glass"]{ display:block; }
-.visual-stage[data-active="human"] .viz-panel[data-viz="human"]{ display:block; }
+body.view-total .viz-panel[data-viz="human"]{ display:block; }
+body.view-total .viz-panel[data-viz="glass"]{ display:none; }
+body.view-session .viz-panel[data-viz="glass"]{ display:block; }
+body.view-session .viz-panel[data-viz="human"]{ display:none; }
 
 .viz-caption{
   margin: 10px 0 0;
@@ -205,78 +207,40 @@ body.view-total .session-only-pill { display:none; }
   text-align:center;
 }
 
-/* GLASS — tapered drinking glass shape */
+/* GLASS — multiple small trapezoid cups (session only) */
 .glass-wrap{
-  display:flex;
-  justify-content:center;
-  padding-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 8px 6px;
+  min-height: 48px;
 }
-.glass{
+/* Cup shape: trapezoid — wider at top (rim), narrower at base */
+.glass-circle{
   position: relative;
-  width: 100px;
-  height: 140px;
-  /* Tapered glass: wider at top (rim), narrower at bottom */
-  clip-path: polygon(8% 0%, 92% 0%, 85% 8%, 78% 14%, 72% 100%, 28% 100%, 22% 14%, 15% 8%);
-  -webkit-clip-path: polygon(8% 0%, 92% 0%, 85% 8%, 78% 14%, 72% 100%, 28% 100%, 22% 14%, 15% 8%);
-  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.35) 50%, rgba(240,248,255,0.5) 100%);
+  width: 22px;
+  height: 28px;
+  clip-path: polygon(10% 0%, 90% 0%, 72% 100%, 28% 100%);
+  -webkit-clip-path: polygon(10% 0%, 90% 0%, 72% 100%, 28% 100%);
+  background: linear-gradient(160deg, rgba(255,255,255,0.85) 0%, rgba(248,252,255,0.6) 50%, rgba(240,248,255,0.5) 100%);
   overflow: hidden;
-  box-shadow: inset 2px 0 8px rgba(255,255,255,0.5),
-              inset -1px 0 4px rgba(200,220,255,0.2),
-              0 2px 8px rgba(31,42,55,0.12);
-  border: none;
+  box-shadow: 0 1px 3px rgba(31,42,55,0.12), inset 1px 0 0 rgba(255,255,255,0.5);
+  flex-shrink: 0;
 }
-.glass::before{
-  content: "";
+.glass-fill{
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5));
-  border-radius: 2px 2px 0 0;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.8);
-}
-.water{
-  position:absolute;
-  bottom:0;
-  left:0;
-  width:100%;
-  height:0%; /* JS sets this */
-  clip-path: polygon(8% 0%, 92% 0%, 85% 8%, 78% 14%, 72% 100%, 28% 100%, 22% 14%, 15% 8%);
-  -webkit-clip-path: polygon(8% 0%, 92% 0%, 85% 8%, 78% 14%, 72% 100%, 28% 100%, 22% 14%, 15% 8%);
+  width: 100%;
+  height: 0%;
+  clip-path: polygon(10% 0%, 90% 0%, 72% 100%, 28% 100%);
+  -webkit-clip-path: polygon(10% 0%, 90% 0%, 72% 100%, 28% 100%);
   background: linear-gradient(180deg, rgba(86,204,242,0.95), rgba(47,128,237,0.95));
-  transition: height 0.6s ease;
-}
-.water::before{
-  content:"";
-  position:absolute;
-  top:-10px;
-  left:-30px;
-  width: 180px;
-  height: 24px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.25);
-  filter: blur(0.2px);
-  animation: wave 3.2s ease-in-out infinite;
-  opacity: 0.7;
-}
-@keyframes wave{
-  0%,100%{ transform: translateX(0); }
-  50%{ transform: translateX(28px); }
-}
-.glass-shine{
-  position:absolute;
-  top: 14px;
-  left: 14px;
-  width: 12px;
-  height: 100px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.15));
-  transform: rotate(6deg);
-  pointer-events: none;
+  transition: height 0.4s ease;
 }
 
-/* HUMAN — each circle = one person's daily intake; new circle when one fills */
+/* HUMAN — SVG person silhouettes (Total view); each = one person's daily intake */
 .human-wrap{
   display: flex;
   flex-wrap: wrap;
@@ -285,25 +249,31 @@ body.view-total .session-only-pill { display:none; }
   padding: 10px 8px 6px;
   min-height: 56px;
 }
-.person-circle{
-  position: relative;
+
+.person-container{
   width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(248,250,252,0.9);
-  border: 1.5px solid rgba(31,42,55,0.12);
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(31,42,55,0.08);
+  height: 40px;
   flex-shrink: 0;
 }
-.person-fill{
-  position: absolute;
-  bottom: 0;
-  left: 0;
+
+.person-svg{
   width: 100%;
-  height: 0%;
-  background: linear-gradient(180deg, rgba(86,204,242,0.95), rgba(47,128,237,0.95));
-  transition: height 0.4s ease;
+  height: 100%;
+  overflow: visible;
+}
+
+.person-bg{
+  fill: rgba(248, 250, 252, 0.9);
+}
+
+.person-fill{
+  fill: #2f80ed;
+  transition: y 0.4s ease, height 0.4s ease;
+}
+
+.person-border{
+  stroke: rgba(31, 42, 55, 0.12);
+  stroke-width: 2px;
 }
 
 /* create a simple “person circles” */
